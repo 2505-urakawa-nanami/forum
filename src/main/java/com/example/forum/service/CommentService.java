@@ -6,10 +6,12 @@ import com.example.forum.repository.CommentRepository;
 import com.example.forum.repository.entity.Comment;
 import com.example.forum.repository.entity.Report;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
 public class CommentService {
     @Autowired
     CommentRepository commentRepository;
@@ -17,8 +19,8 @@ public class CommentService {
     /*
      * コメント全件取得処理
      */
-    public List<CommentForm> findAllByReportId(Integer reportId) {
-        List<Comment> results = commentRepository.findAllByOrderByIdAsc(reportId);
+    public List<CommentForm> findAllComment() {
+        List<Comment> results = commentRepository.findAllByOrderByIdDesc();
         List<CommentForm> comments = setCommentForm(results);
         return comments;
     }
@@ -55,5 +57,19 @@ public class CommentService {
         comment.setReportId(reqComment.getReportId());
         return comment;
     }
-
+    /*
+     *コメントを削除
+     */
+    public void deleteComment(Integer id) {
+        commentRepository.deleteById(id);
+    }
+    /*
+     * レコード取得
+     */
+    public CommentForm editComment(Integer id) {
+        List<Comment> results = new ArrayList<>();
+        results.add((Comment) commentRepository.findById(id).orElse(null));
+        List<CommentForm> comments = setCommentForm(results);
+        return comments.get(0);
+    }
 }
