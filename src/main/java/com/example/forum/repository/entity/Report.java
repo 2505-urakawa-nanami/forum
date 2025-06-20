@@ -8,6 +8,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "report")
@@ -21,4 +25,12 @@ public class Report {
 
     @Column
     private String content;
+
+    @Column(name = "create_date", updatable = false)
+    @CreationTimestamp
+    private Timestamp createDate;
+
+    @Column(name = "update_date", updatable = true)
+    @UpdateTimestamp
+    private Timestamp updateDate;
 }

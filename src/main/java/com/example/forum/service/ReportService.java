@@ -6,7 +6,11 @@ import com.example.forum.repository.entity.Report;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -19,6 +23,35 @@ public class ReportService {
      */
     public List<ReportForm> findAllReport() {
         List<Report> results = reportRepository.findAllByOrderByIdDesc();
+        List<ReportForm> reports = setReportForm(results);
+        return reports;
+    }
+
+    /*
+    *指定期間で絞り込み取得
+     */
+    public List<ReportForm> findDaysReport(String start, String end) throws ParseException{
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Timestamp tsStart = null;
+        Timestamp tsEnd = null;
+
+        //開始日の処理
+        if(!start.isBlank()){
+            Date date = sdf.parse(start + " 00:00:00");
+            tsStart = new Timestamp(date.getTime());
+        }else{
+            Date date = sdf.parse("2020-01-01 00:00:00");
+            tsStart = new Timestamp(date.getTime());
+        }
+        //終了日の設定
+        if(!end.isBlank()){
+            Date date = sdf.parse(end + " 23:59:59");
+            tsEnd = new Timestamp(date.getTime());
+        }else{
+            Date date = sdf.parse("2500-01-01 23:59:59");
+            tsEnd = new Timestamp(date.getTime());
+        }
+        List<Report> results =reportRepository.findAllByUpdateDateBetweenOrderByUpdateDateDesc(tsStart, tsEnd);
         List<ReportForm> reports = setReportForm(results);
         return reports;
     }

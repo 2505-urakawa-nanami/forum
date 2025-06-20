@@ -9,6 +9,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.List;
 
 @Controller
@@ -22,10 +24,23 @@ public class ForumController {
      * 投稿内容表示処理・コメント内容表示処理
      */
     @GetMapping
-    public ModelAndView top() {
+    public ModelAndView top(@ModelAttribute("start") String start,
+                            @ModelAttribute("end") String end) throws ParseException{
         ModelAndView mav = new ModelAndView();
-        // 投稿を全件取得
-        List<ReportForm> contentData = reportService.findAllReport();
+        List<ReportForm> contentData;
+
+        if(start == null || start.isBlank() && end == null || end.isBlank()) {
+            // 投稿を全件取得
+            contentData = reportService.findAllReport();
+        }else{
+            contentData = reportService.findDaysReport(start, end);
+            if (!start.isBlank()){
+                mav.addObject("start", start);
+            }
+            if(!end.isBlank()){
+                mav.addObject("end", end);
+            }
+        }
         //コメント内容を全件取得
         List<CommentForm> commentData = commentService.findAllComment();
         // 画面遷移先を指定
@@ -98,10 +113,14 @@ public class ForumController {
                                       @ModelAttribute("formModel") ReportForm report) {
         // UrlParameterのidを更新するentityにセット
         report.setId(id);
+
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        report.setUpdateDate(timestamp);
         // 編集した投稿を更新
         reportService.saveReport(report);
         // rootへリダイレクト
         return new ModelAndView("redirect:/");
     }
+
 
 }

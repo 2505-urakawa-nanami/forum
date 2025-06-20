@@ -3,11 +3,13 @@ package com.example.forum.service;
 import com.example.forum.controller.form.CommentForm;
 import com.example.forum.controller.form.ReportForm;
 import com.example.forum.repository.CommentRepository;
+import com.example.forum.repository.ReportRepository;
 import com.example.forum.repository.entity.Comment;
 import com.example.forum.repository.entity.Report;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +17,8 @@ import java.util.List;
 public class CommentService {
     @Autowired
     CommentRepository commentRepository;
+    @Autowired
+    ReportRepository reportRepository;
 
     /*
      * コメント全件取得処理
@@ -46,6 +50,12 @@ public class CommentService {
     public void saveComment(CommentForm reqComment) {
         Comment saveComment = setCommentEntity(reqComment);
         commentRepository.save(saveComment);
+        Report report = reportRepository.findById(reqComment.getReportId()).orElseThrow();
+        if(report != null){
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            report.setUpdateDate(timestamp);
+            reportRepository.save(report);
+        }
     }
     /*
      * リクエストから取得した情報をEntityに設定
