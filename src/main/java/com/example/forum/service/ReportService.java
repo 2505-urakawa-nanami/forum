@@ -21,8 +21,8 @@ public class ReportService {
     /*
      * レコード全件取得処理
      */
-    public List<ReportForm> findAllReport() {
-        List<Report> results = reportRepository.findAllByOrderByIdDesc();
+    public List<ReportForm> findAllByOrderByUpdateDateDesc() {
+        List<Report> results = reportRepository.findAllByOrderByUpdateDateDesc();
         List<ReportForm> reports = setReportForm(results);
         return reports;
     }
@@ -86,6 +86,7 @@ public class ReportService {
     private Report setReportEntity(ReportForm reqReport) {
         Report report = new Report();
         report.setId(reqReport.getId());
+        report.setUpdateDate(reqReport.getUpdateDate());
         report.setContent(reqReport.getContent());
         return report;
     }

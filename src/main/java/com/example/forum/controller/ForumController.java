@@ -4,8 +4,10 @@ import com.example.forum.controller.form.CommentForm;
 import com.example.forum.controller.form.ReportForm;
 import com.example.forum.service.CommentService;
 import com.example.forum.service.ReportService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -31,7 +33,7 @@ public class ForumController {
 
         if(start == null || start.isBlank() && end == null || end.isBlank()) {
             // 投稿を全件取得
-            contentData = reportService.findAllReport();
+            contentData = reportService.findAllByOrderByUpdateDateDesc();
         }else{
             contentData = reportService.findDaysReport(start, end);
             if (!start.isBlank()){
@@ -72,7 +74,14 @@ public class ForumController {
      * 新規投稿処理
      */
     @PostMapping("/add")
-    public ModelAndView addContent(@ModelAttribute("formModel") ReportForm reportForm) {
+    public ModelAndView addContent(@Valid @ModelAttribute("formModel") ReportForm reportForm, BindingResult result) {
+        //エラー処理
+        if(result.hasErrors()){
+            ModelAndView mav = new ModelAndView("new");
+            //新規投稿画面に戻る
+            mav.addObject("formModel", reportForm);
+            return mav;
+        }
         // 投稿をテーブルに格納
         reportService.saveReport(reportForm);
         // rootへリダイレクト
@@ -110,7 +119,16 @@ public class ForumController {
      */
     @PutMapping("/update/{id}")
     public ModelAndView updateContent(@PathVariable Integer id,
-                                      @ModelAttribute("formModel") ReportForm report) {
+                                      @Valid @ModelAttribute("formModel") ReportForm report, BindingResult result) {
+        //エラー処理
+        if(result.hasErrors()){
+            report.setId(id);
+            report.setUpdateDate(new Timestamp(System.currentTimeMillis()));
+            ModelAndView mav = new ModelAndView("edit");
+            //新規投稿画面に戻る
+            mav.addObject("formModel", report);
+            return mav;
+        }
         // UrlParameterのidを更新するentityにセット
         report.setId(id);
 

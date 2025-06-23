@@ -3,13 +3,21 @@ package com.example.forum.controller;
 import com.example.forum.controller.form.CommentForm;
 import com.example.forum.controller.form.ReportForm;
 import com.example.forum.service.CommentService;
+import com.example.forum.service.ReportService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.sql.Timestamp;
+import java.util.List;
+
 @Controller
 public class CommentController {
+    @Autowired
+    ReportService reportService;
     @Autowired
     CommentService commentService;
 
@@ -18,7 +26,20 @@ public class CommentController {
      */
     @PostMapping("/comment/add/{id}")
     public ModelAndView addComment(@PathVariable ("id") Integer reportId,
-                                   @ModelAttribute("formModel") CommentForm commentForm) {
+                                   @Valid  @ModelAttribute("formModel") CommentForm commentForm, BindingResult result) {
+        //エラー処理
+        if(result.hasErrors()){
+            ModelAndView mav = new ModelAndView("top");
+            List<ReportForm> contentData = reportService.findAllByOrderByUpdateDateDesc();
+            // 投稿データオブジェクトを保管
+            mav.addObject("contents", contentData);
+            //コメント内容を全件取得
+            List<CommentForm> commentData = commentService.findAllComment();
+            //コメントデータオブジェクトを保管
+            mav.addObject("comments", commentData);
+            mav.addObject("formModel", commentForm);
+            return mav;
+        }
         commentForm.setReportId(reportId);
         // 投稿をテーブルに格納
         commentService.saveComment(commentForm);
@@ -55,7 +76,14 @@ public class CommentController {
      */
     @PutMapping("/comment/update/{id}")
     public ModelAndView updateComment(@PathVariable Integer id,
-                                      @ModelAttribute("formModel") CommentForm comment) {
+                                      @Valid @ModelAttribute("formModel") CommentForm comment, BindingResult result) {
+        //エラー処理
+        if(result.hasErrors()){
+            ModelAndView mav = new ModelAndView("edit_comment");
+            //新規投稿画面に戻る
+            mav.addObject("formModel", comment);
+            return mav;
+        }
         // UrlParameterのidを更新するentityにセット
         comment.setId(id);
         // 編集した投稿を更新

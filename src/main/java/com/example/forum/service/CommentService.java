@@ -8,11 +8,13 @@ import com.example.forum.repository.entity.Comment;
 import com.example.forum.repository.entity.Report;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+@Transactional
 @Service
 public class CommentService {
     @Autowired
@@ -51,18 +53,18 @@ public class CommentService {
         Comment saveComment = setCommentEntity(reqComment);
         commentRepository.save(saveComment);
         Report report = reportRepository.findById(reqComment.getReportId()).orElseThrow();
-        if(report != null){
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            report.setUpdateDate(timestamp);
-            reportRepository.save(report);
-        }
+
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        report.setUpdateDate(timestamp);
+        reportRepository.save(report);
+
     }
     /*
      * リクエストから取得した情報をEntityに設定
      */
     private Comment setCommentEntity(CommentForm reqComment) {
         Comment comment = new Comment();
-        comment.setId(reqComment.getId());
+        //comment.setId(reqComment.getId());
         comment.setContent(reqComment.getContent());
         comment.setReportId(reqComment.getReportId());
         return comment;
